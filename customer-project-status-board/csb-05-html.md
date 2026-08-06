@@ -59,36 +59,74 @@ If `python` is not on PATH, generate HTML inline following the spec and canonica
 
 ---
 
-## Canonical CSS (reference — used by generate_html.py, do not modify independently)
+## Layout obrigatório — referência: CSB_20260716_007.html
+
+O HTML gerado DEVE seguir este layout exato. **Não usar tabs horizontais no topo.**
+
+### Estrutura da página
+
+```
+<header class="header">           ← fixo, background --shell, altura 48px
+  logo SAP (SVG inline) + título + avatar "EM"
+<div class="layout">              ← display:flex, margin-top: 48px
+  <nav class="sidebar">           ← 220px fixo, fundo branco, nav-item buttons
+  <div class="main">              ← flex:1, margin-left: 220px
+    <div class="alert-bar">       ← vermelha/laranja, alertas críticos animados
+    <div class="kpi-strip">       ← cards KPI com ícone 28px + valor 36px
+    <div id="panel-*" class="panel [active]">  ← um por view
+<footer>                          ← background --shell, margin-left: 220px
+```
+
+### Sidebar — nav-items obrigatórios (nesta ordem)
+
+```
+📊 Dashboard         (badge azul: nº projetos)
+⚡ Next Actions      (badge vermelho: nº ações críticas)
+✅ Prioritized TODO
+🎫 Cases & WCR       (badge vermelho: nº cases)
+🤝 Partner Health
+📈 Go-Live Timeline  (badge amarelo se go-lives em risco)
+💬 Comunicações      (badge azul: nº conversas)
+🏢 Projetos
+```
+
+Rodapé da sidebar: bloco com ponto vermelho animado + resumo (nº projetos, cases, alertas).
+
+### Canonical CSS
 
 ```css
 :root {
-  --shell: #354a5e;
-  --page-bg: #f5f6f8;
-  --card-bg: #ffffff;
-  --text: #32363a;
-  --sub: #6a6d70;
-  --border: #e0e0e0;
+  --shell: #354a5e; --page-bg: #f5f6f8; --card-bg: #ffffff;
+  --text: #32363a; --sub: #6a6d70; --border: #e0e0e0;
   --green: #107e3e; --green-bg: #f1fdf6; --green-border: #a5d6a7;
   --yellow: #e9730c; --yellow-bg: #fef7f1; --yellow-border: #ffcc80;
   --red: #bb0000; --red-bg: #fff1f1; --red-border: #ef9a9a;
   --blue: #0a6ed1; --blue-bg: #e8f2fc; --blue-border: #90caf9;
   --neutral: #6a6d70; --neutral-bg: #f5f6f8; --neutral-border: #bdbdbd;
-  --sidebar-w: 220px;
-  --header-h: 48px;
+  --sidebar-w: 220px; --header-h: 48px;
 }
 ```
 
-## Panel spec (for fallback / reference)
+Componentes CSS obrigatórios: `.header`, `.sap-logo` (SVG), `.avatar`, `.layout`, `.sidebar`, `.nav-item`, `.nav-badge`, `.main`, `.alert-bar` (com `@keyframes pulse-alert`), `.kpi-strip`, `.kpi`, `.panel`, `.table-scroll`, `thead th` (background `--shell`), `.chip-red` (com `@keyframes pulse-chip`), `.badge-*`, `.todo-item.p1/p2/p3/p4`, `.pnum`, `.todo-project-tag`, `.timeline`, `.tl-dot`, `footer`.
 
-- **Dashboard**: KPI strip (📁 projects · 🎫 cases · ⏱ weeks · 📧 unread · 📅 events) + project table (Project|Stage|Status|Partner|Wave|Phase|Planned Go-Live|Go-Live|Weeks Out|Alert) + Live collapsible
-- **Next Actions**: `.card` elements from `crossref.nextActions[]`
-- **Prioritized TODO**: `.todo-item.p1/p2/p3` from `crossref.todos[]`
-- **Cases & WCR**: tables from `itsm.cases` / `itsm.wcr`
-- **Partner Health**: table with Risk Signal (🔴🟡🟢⚫) computed from portfolio
-- **Go-Live Timeline**: CSS timeline from portfolio + `crossref.goLiveChanges[]`
-- **Meeting Prep**: subtabs Hoje/Amanhã + meeting cards (`.has-alert` if Red) + key email signals
-- **Projetos**: `.proj-grid` of `.proj-card` per active project
+### Panel spec
+
+- **Dashboard**: KPI strip + tabela sortável (`sortTable()`) com colunas Projeto|Stage|Status|Partner|Fase|Go-Live|Semanas|Alerta + `<details>` colapsível para projetos Live + `applyFilter()` no campo de busca
+- **Next Actions**: `.card.red/yellow/blue` numerados de `crossref.nextActions[]`
+- **Prioritized TODO**: `.todo-item.p1/p2/p3/p4` com `.todo-project-tag` de `crossref.todos[]`
+- **Cases & WCR**: tabela sortável de `itsm.cases` + `.warn-box` se case High antigo + bloco WCR de `itsm.wcr`
+- **Partner Health**: tabela com colunas Cliente|Partner|Status Partner|Fase|Status Projeto|Observação
+- **Go-Live Timeline**: `.timeline` com `.tl-dot.red/yellow/green/gray` + `.tl-content`
+- **Comunicações**: seção Agenda (reuniões do dia) + seção Teams linkadas a projetos (`.email-row.urgent/flagged`) + outras conversas relevantes
+- **Projetos**: tabela completa com ID HPI linkado, Stage, Fase, Status, Partner, Go-Live, Kick-off, País
+
+### JavaScript obrigatório
+
+```js
+function showPanel(id, el) { /* esconde todos .panel, ativa panel-{id} e nav-item */ }
+function sortTable(id, col, th) { /* ordena tbody pelo col clicado, toggle asc/desc */ }
+function applyFilter() { /* filtra linhas do tbl-dashboard pelo texto digitado */ }
+```
 
 ## Security
 
